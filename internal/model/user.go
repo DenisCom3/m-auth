@@ -5,19 +5,27 @@ import (
 	"time"
 )
 
-type Role string
+type Role int
 
 const (
-	user  Role = "user"
-	admin Role = "admin"
+	UserRole  Role = 0
+	AdminRole Role = 1
 )
 
-// User нужны ли геттеры?
+type CreateUser struct {
+	Info     UserInfo
+	Password string
+}
+
 type User struct {
 	ID        int64
-	Name      string
-	Email     string
-	Role      Role
+	Info      UserInfo
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
+}
+
+type UserInfo struct {
+	Name  string
+	Email string
+	Role  Role
 }
