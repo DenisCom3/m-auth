@@ -6,5 +6,18 @@ import (
 )
 
 func (s *serv) Create(ctx context.Context, user model.CreateUser) (int64, error) {
-	return 0, nil
+
+	hashedPassword, err := s.hashService.HashPassword(user.Password)
+
+	if err != nil {
+		return 0, err
+	}
+	user.Password = hashedPassword
+
+	id, err := s.userRepo.Create(ctx, user)
+
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
