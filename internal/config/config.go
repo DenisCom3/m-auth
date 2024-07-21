@@ -11,7 +11,7 @@ import (
 
 var cfg *Config
 
-type YamlConfig struct {
+type yamlConfig struct {
 	Postgres postgres.Postgres `yaml:"postgres" env-required:"true"`
 	Grpc     grpc.Grpc         `yaml:"grpc" env-required:"true"`
 }
@@ -64,7 +64,7 @@ func MustLoad() error {
 		return fmt.Errorf("config file does not exist: %s", configPath)
 	}
 
-	var yaml YamlConfig
+	var yaml yamlConfig
 
 	if err := cleanenv.ReadConfig(configPath, &yaml); err != nil {
 		return fmt.Errorf("cannot read config: %s", err)

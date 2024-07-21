@@ -84,5 +84,49 @@ func (r *repo) Create(ctx context.Context, user model.CreateUser) (int64, error)
 	}
 
 	return id, nil
+}
+
+func (r *repo) Update(ctx context.Context, user model.User) error {
+
+	query, args, err := psql.Update(tableName).
+		Set("name", user.Info.Name).
+		Set("email", user.Info.Email).
+		Set("role", user.Info.Role).
+		Where(sq.Eq{"id": user.ID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{Name: "userRepo.Update", QueryRaw: query}
+
+	err = r.db.DB().QueryRowContext(ctx, q, args).Scan()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (r *repo) Delete(ctx context.Context, id int64) error {
+
+	sql, args, err := psql.Delete(tableName).Where(sq.Eq{"id": id}).ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{Name: "userRepo.Delete", QueryRaw: sql}
+
+	err = r.db.DB().QueryRowContext(ctx, q, args).Scan()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
