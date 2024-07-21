@@ -103,6 +103,7 @@ func logQuery(ctx context.Context, q db.Query, args ...any) {
 	prettyQuery := prettier.Pretty(q.QueryRaw, prettier.PlaceholderDollar, args...)
 	slog.InfoContext(
 		ctx,
+		"sql query",
 		fmt.Sprintf("sql: %s", q.Name),
 		fmt.Sprintf("query: %s", prettyQuery),
 	)
