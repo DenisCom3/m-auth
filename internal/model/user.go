@@ -17,6 +17,11 @@ type CreateUser struct {
 	Password string
 }
 
+type UpdateUser struct {
+	ID   int64
+	Info UserInfo
+}
+
 type User struct {
 	ID        int64
 	Info      UserInfo

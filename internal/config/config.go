@@ -9,14 +9,14 @@ import (
 	"os"
 )
 
-var cfg *Config
+var cfg *config
 
 type yamlConfig struct {
 	Postgres postgres.Postgres `yaml:"postgres" env-required:"true"`
 	Grpc     grpc.Grpc         `yaml:"grpc" env-required:"true"`
 }
 
-type Config struct {
+type config struct {
 	postgres Postgres
 	grpc     Grpc
 }
@@ -70,7 +70,7 @@ func MustLoad() error {
 		return fmt.Errorf("cannot read config: %s", err)
 	}
 
-	cfg = &Config{
+	cfg = &config{
 		postgres: yaml.Postgres,
 		grpc:     yaml.Grpc,
 	}

@@ -86,7 +86,7 @@ func (r *repo) Create(ctx context.Context, user model.CreateUser) (int64, error)
 	return id, nil
 }
 
-func (r *repo) Update(ctx context.Context, user model.User) error {
+func (r *repo) Update(ctx context.Context, user model.UpdateUser) error {
 
 	query, args, err := psql.Update(tableName).
 		Set("name", user.Info.Name).

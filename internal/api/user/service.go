@@ -7,11 +7,11 @@ import (
 
 type Implementation struct {
 	desc.UnimplementedUserV1Server
-	noteService service.UserService
+	userService service.UserService
 }
 
-func NewImplementation(noteService service.UserService) *Implementation {
+func NewImplementation(userService service.UserService) *Implementation {
 	return &Implementation{
-		noteService: noteService,
+		userService: userService,
 	}
 }

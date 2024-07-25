@@ -78,7 +78,7 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
-	if s.userRepository != nil {
+	if s.userRepository == nil {
 		s.userRepository = userRepo.New(s.DBClient(ctx))
 	}
 
@@ -86,7 +86,7 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 }
 
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
-	if s.userService != nil {
+	if s.userService == nil {
 		s.userService = userServ.New(s.UserRepository(ctx))
 	}
 
