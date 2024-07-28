@@ -4,16 +4,16 @@ volumes:
   postgres_volume:
 
 services:
-  m-auth:
-    environment:
-      - APP_CONFIG_PATH="config/config.yaml"
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    ports:
-      - "4200:50051"
-    depends_on:
-      - pg
+#  m-auth:
+#    environment:
+#      - APP_CONFIG_PATH="config/config.yaml"
+#    build:
+#      context: .
+#      dockerfile: docker/Dockerfile
+#    ports:
+#      - "4200:50051"
+#    depends_on:
+#      - pg
   pg:
     image: postgres:16-alpine3.20
     environment:
