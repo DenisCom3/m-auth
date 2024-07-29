@@ -8,3 +8,10 @@ postgres:
 grpc:
   host: "localhost"
   port: 4200
+
+redis:
+  host: "localhost"
+  port: 64321
+  connection-timeout: 5s
+  max-idle: 10
+  idle-timeout: 300s

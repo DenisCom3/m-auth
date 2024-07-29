@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/DenisCom3/m-auth/internal/config/grpc"
 	"github.com/DenisCom3/m-auth/internal/config/postgres"
+	"github.com/DenisCom3/m-auth/internal/config/redis"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 	"os"
+	"time"
 )
 
 var cfg *config
@@ -14,11 +16,13 @@ var cfg *config
 type yamlConfig struct {
 	Postgres postgres.Postgres `yaml:"postgres" env-required:"true"`
 	Grpc     grpc.Grpc         `yaml:"grpc" env-required:"true"`
+	Redis    redis.Redis       `yaml:"redis" env-required:"true"`
 }
 
 type config struct {
 	postgres Postgres
 	grpc     Grpc
+	redis    Redis
 }
 
 type Postgres interface {
@@ -29,11 +33,25 @@ type Grpc interface {
 	Address() string
 }
 
+type Redis interface {
+	Address() string
+	ConnectionTimeout() time.Duration
+	MaxIdle() int
+	IdleTimeout() time.Duration
+}
+
 func GetPostgres() Postgres {
 	if cfg == nil {
 		panic("config not initialized")
 	}
 	return cfg.postgres
+}
+
+func GetRedis() Redis {
+	if cfg == nil {
+		panic("config not initialized")
+	}
+	return cfg.redis
 }
 
 func GetGrpc() Grpc {
@@ -73,6 +91,7 @@ func MustLoad() error {
 	cfg = &config{
 		postgres: yaml.Postgres,
 		grpc:     yaml.Grpc,
+		redis:    yaml.Redis,
 	}
 	return nil
 }
