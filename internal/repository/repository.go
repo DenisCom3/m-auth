@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+
 	"github.com/DenisCom3/m-auth/internal/model"
 )
 
@@ -11,3 +13,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user model.UpdateUser) error
 	Delete(ctx context.Context, id int64) error
 }
+
+var (
+	ErrUserNotFound = errors.New("user not found in db")
+)

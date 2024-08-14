@@ -16,7 +16,7 @@ var cfg *config
 type yamlConfig struct {
 	Postgres postgres.Postgres `yaml:"postgres" env-required:"true"`
 	Grpc     grpc.Grpc         `yaml:"grpc" env-required:"true"`
-	Redis    redis.Redis       `yaml:"redis" env-required:"true"`
+	Redis    redis.Redis       `yaml:"redigo" env-required:"true"`
 }
 
 type config struct {

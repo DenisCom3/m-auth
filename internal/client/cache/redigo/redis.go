@@ -1,12 +1,14 @@
-package redis
+package redigo
 
 import (
 	"context"
+	"errors"
+	"log"
+	"time"
+
 	"github.com/DenisCom3/m-auth/internal/client/cache"
 	"github.com/DenisCom3/m-auth/internal/config"
 	"github.com/gomodule/redigo/redis"
-	"log"
-	"time"
 )
 
 var _ cache.Cache = (*client)(nil)
@@ -54,7 +56,7 @@ func (c *client) Set(ctx context.Context, key string, value interface{}) error {
 	return nil
 }
 
-func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error) {
+func (c *client) HGetAll(ctx context.Context, key string) (map[string]any, error) {
 	var values []interface{}
 	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
 		var errEx error
@@ -67,8 +69,15 @@ func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error)
 	if err != nil {
 		return nil, err
 	}
+	result := make(map[string]any)
+	if condition := len(values)%2 != 0; condition {
+		return nil, errors.New("redigo: HGET. invalid number of values")
+	}
+	for i := 0; i < len(values); i += 2 {
+		result[values[i].(string)] = values[i+1]
+	}
 
-	return values, nil
+	return result, nil
 }
 
 func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
@@ -130,7 +139,7 @@ func (c *client) execute(ctx context.Context, handler handler) error {
 	defer func() {
 		err = conn.Close()
 		if err != nil {
-			log.Printf("failed to close redis connection: %v\n", err)
+			log.Printf("failed to close redigo connection: %v\n", err)
 		}
 	}()
 
@@ -148,7 +157,7 @@ func (c *client) getConnect(ctx context.Context) (redis.Conn, error) {
 
 	conn, err := c.pool.GetContext(getConnTimeoutCtx)
 	if err != nil {
-		log.Printf("failed to get redis connection: %v\n", err)
+		log.Printf("failed to get redigo connection: %v\n", err)
 
 		_ = conn.Close()
 		return nil, err

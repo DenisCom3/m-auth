@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
+	"log"
+
 	userApi "github.com/DenisCom3/m-auth/internal/api/user"
 	"github.com/DenisCom3/m-auth/internal/client/cache"
-	"github.com/DenisCom3/m-auth/internal/client/cache/redis"
+	goredis "github.com/DenisCom3/m-auth/internal/client/cache/go-redis"
 	"github.com/DenisCom3/m-auth/internal/client/db"
 	"github.com/DenisCom3/m-auth/internal/client/db/postgres"
 	"github.com/DenisCom3/m-auth/internal/client/db/transaction"
@@ -13,8 +15,6 @@ import (
 	userRepo "github.com/DenisCom3/m-auth/internal/repository/user"
 	"github.com/DenisCom3/m-auth/internal/service"
 	userServ "github.com/DenisCom3/m-auth/internal/service/user"
-	redigo "github.com/gomodule/redigo/redis"
-	"log"
 )
 
 // in provider only interface or pointer to struct
@@ -66,15 +66,7 @@ func (s *serviceProvider) RedisConfig() config.Redis {
 
 func (s *serviceProvider) CacheClient() cache.Cache {
 	if s.cacheClient == nil {
-		redisPool := &redigo.Pool{
-			MaxIdle:     s.RedisConfig().MaxIdle(),
-			IdleTimeout: s.RedisConfig().IdleTimeout(),
-			DialContext: func(ctx context.Context) (redigo.Conn, error) {
-				return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
-			},
-		}
-
-		s.cacheClient = redis.New(redisPool, s.RedisConfig())
+		s.cacheClient = goredis.NewCache(s.RedisConfig())
 	}
 
 	return s.cacheClient
@@ -118,7 +110,7 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userService = userServ.New(s.UserRepository(ctx))
+		s.userService = userServ.New(s.UserRepository(ctx), s.CacheClient())
 	}
 
 	return s.userService
