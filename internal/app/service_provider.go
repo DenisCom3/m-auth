@@ -2,6 +2,10 @@ package app
 
 import (
 	"context"
+	"github.com/DenisCom3/m-auth/internal/client/broker_message/kafka"
+	"github.com/DenisCom3/m-auth/internal/client/broker_message/kafka/consumer"
+	"github.com/DenisCom3/m-auth/internal/closer"
+	"github.com/IBM/sarama"
 	"log"
 
 	userApi "github.com/DenisCom3/m-auth/internal/api/user"
@@ -19,13 +23,15 @@ import (
 
 // in provider only interface or pointer to struct
 type serviceProvider struct {
-	pgConfig    config.Postgres
-	grpcConfig  config.Grpc
-	redisConfig config.Redis
+	pgConfig            config.Postgres
+	grpcConfig          config.Grpc
+	redisConfig         config.Redis
+	kafkaConsumerConfig config.KafkaConsumer
+	cacheClient         cache.Cache
+	dbClient            db.Client
+	txManager           db.TxManager
 
-	cacheClient cache.Cache
-	dbClient    db.Client
-	txManager   db.TxManager
+	consumer kafka.Consumer
 
 	userRepository repository.UserRepository
 	userService    service.UserService
@@ -62,6 +68,16 @@ func (s *serviceProvider) RedisConfig() config.Redis {
 	}
 
 	return s.redisConfig
+}
+
+func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumer {
+	if s.kafkaConsumerConfig == nil {
+		cfg := config.GetKafkaConsumer()
+
+		s.kafkaConsumerConfig = cfg
+	}
+
+	return s.kafkaConsumerConfig
 }
 
 func (s *serviceProvider) CacheClient() cache.Cache {
@@ -122,4 +138,24 @@ func (s *serviceProvider) UserImpl(ctx context.Context) *userApi.Implementation 
 	}
 
 	return s.userImpl
+}
+
+func (s *serviceProvider) KafkaConsumer(ctx context.Context) kafka.Consumer {
+	if s.consumer == nil {
+		consumerGroup, err := sarama.NewConsumerGroup(
+			s.KafkaConsumerConfig().Brokers(),
+			s.KafkaConsumerConfig().GroupID(),
+			s.KafkaConsumerConfig().Config(),
+		)
+
+		if err != nil {
+			log.Fatalf("failed to create consumer group: %v", err)
+		}
+
+		consumerGroupHandler := consumer.NewGroupHandler()
+		s.consumer = consumer.New(consumerGroup, consumerGroupHandler)
+		closer.Add(s.consumer.Close)
+	}
+
+	return s.consumer
 }

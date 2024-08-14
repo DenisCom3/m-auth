@@ -15,3 +15,8 @@ redis:
   connection-timeout: 5s
   max-idle: 10
   idle-timeout: 300s
+
+kafka:
+  consumer:
+    group-id: "user"
+    brokers: ['localhost:9092']

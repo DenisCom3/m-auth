@@ -3,8 +3,10 @@ package config
 import (
 	"fmt"
 	"github.com/DenisCom3/m-auth/internal/config/grpc"
+	"github.com/DenisCom3/m-auth/internal/config/kafka"
 	"github.com/DenisCom3/m-auth/internal/config/postgres"
 	"github.com/DenisCom3/m-auth/internal/config/redis"
+	"github.com/IBM/sarama"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 	"os"
@@ -16,13 +18,15 @@ var cfg *config
 type yamlConfig struct {
 	Postgres postgres.Postgres `yaml:"postgres" env-required:"true"`
 	Grpc     grpc.Grpc         `yaml:"grpc" env-required:"true"`
-	Redis    redis.Redis       `yaml:"redigo" env-required:"true"`
+	Redis    redis.Redis       `yaml:"redis" env-required:"true"`
+	Kafka    kafka.Kafka       `yaml:"kafka"`
 }
 
 type config struct {
-	postgres Postgres
-	grpc     Grpc
-	redis    Redis
+	postgres      Postgres
+	grpc          Grpc
+	redis         Redis
+	kafkaConsumer KafkaConsumer
 }
 
 type Postgres interface {
@@ -38,6 +42,12 @@ type Redis interface {
 	ConnectionTimeout() time.Duration
 	MaxIdle() int
 	IdleTimeout() time.Duration
+}
+
+type KafkaConsumer interface {
+	Brokers() []string
+	GroupID() string
+	Config() *sarama.Config
 }
 
 func GetPostgres() Postgres {
@@ -59,6 +69,13 @@ func GetGrpc() Grpc {
 		panic("config not initialized")
 	}
 	return cfg.grpc
+}
+
+func GetKafkaConsumer() KafkaConsumer {
+	if cfg == nil {
+		panic("config not initialized")
+	}
+	return cfg.kafkaConsumer
 }
 func MustLoad() error {
 
@@ -89,9 +106,10 @@ func MustLoad() error {
 	}
 
 	cfg = &config{
-		postgres: yaml.Postgres,
-		grpc:     yaml.Grpc,
-		redis:    yaml.Redis,
+		postgres:      yaml.Postgres,
+		grpc:          yaml.Grpc,
+		redis:         yaml.Redis,
+		kafkaConsumer: yaml.Kafka.Consumer,
 	}
 	return nil
 }
