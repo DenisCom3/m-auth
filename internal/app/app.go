@@ -10,7 +10,13 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
+
+const countConsumers = 1
 
 type App struct {
 	serviceProvider *serviceProvider
@@ -31,13 +37,30 @@ func New(ctx context.Context) (*App, error) {
 
 }
 
-func (a *App) Run() error {
+func (a *App) Run(ctx context.Context) error {
 	defer func() {
 		closer.CloseAll()
 		closer.Wait()
 	}()
 
+	go a.runConsumers(ctx)
+
 	return a.runGRPCServer()
+}
+
+func (a *App) runConsumers(ctx context.Context) {
+	ctx, cancel := context.WithCancel(ctx)
+	wg := &sync.WaitGroup{}
+	wg.Add(countConsumers)
+
+	go func() {
+		defer wg.Done()
+		err := a.serviceProvider.UserCreaterConsumer(ctx).RunConsumer(ctx)
+		if err != nil {
+			log.Printf("failed to run consumer: %s", err.Error())
+		}
+	}()
+	gracefulShutdown(ctx, cancel, wg)
 }
 
 func (a *App) runGRPCServer() error {
@@ -94,4 +117,24 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
 
 	return nil
+}
+
+func gracefulShutdown(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup) {
+	select {
+	case <-ctx.Done():
+		log.Println("terminating: context cancelled")
+	case <-waitSignal():
+		log.Println("terminating: via signal")
+	}
+
+	cancel()
+	if wg != nil {
+		wg.Wait()
+	}
+}
+
+func waitSignal() chan os.Signal {
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
+	return sigterm
 }

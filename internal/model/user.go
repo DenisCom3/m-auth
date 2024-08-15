@@ -13,8 +13,8 @@ const (
 )
 
 type CreateUser struct {
-	Info     UserInfo
-	Password string
+	Info     UserInfo `json:"info"`
+	Password string   `json:"password"`
 }
 
 type UpdateUser struct {
@@ -30,7 +30,7 @@ type User struct {
 }
 
 type UserInfo struct {
-	Name  string
-	Email string
-	Role  Role
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Role  Role   `json:"role"`
 }

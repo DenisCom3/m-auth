@@ -5,6 +5,7 @@ import (
 	"github.com/DenisCom3/m-auth/internal/client/broker_message/kafka"
 	"github.com/DenisCom3/m-auth/internal/client/broker_message/kafka/consumer"
 	"github.com/DenisCom3/m-auth/internal/closer"
+	"github.com/DenisCom3/m-auth/internal/service/consumer/user_creater"
 	"github.com/IBM/sarama"
 	"log"
 
@@ -31,10 +32,10 @@ type serviceProvider struct {
 	dbClient            db.Client
 	txManager           db.TxManager
 
-	consumer kafka.Consumer
-
-	userRepository repository.UserRepository
-	userService    service.UserService
+	consumer            kafka.Consumer
+	userCreaterConsumer service.ConsumerService
+	userRepository      repository.UserRepository
+	userService         service.UserService
 
 	userImpl *userApi.Implementation
 }
@@ -140,7 +141,7 @@ func (s *serviceProvider) UserImpl(ctx context.Context) *userApi.Implementation 
 	return s.userImpl
 }
 
-func (s *serviceProvider) KafkaConsumer(ctx context.Context) kafka.Consumer {
+func (s *serviceProvider) KafkaConsumer(_ context.Context) kafka.Consumer {
 	if s.consumer == nil {
 		consumerGroup, err := sarama.NewConsumerGroup(
 			s.KafkaConsumerConfig().Brokers(),
@@ -158,4 +159,12 @@ func (s *serviceProvider) KafkaConsumer(ctx context.Context) kafka.Consumer {
 	}
 
 	return s.consumer
+}
+
+func (s *serviceProvider) UserCreaterConsumer(ctx context.Context) service.ConsumerService {
+	if s.userCreaterConsumer == nil {
+		s.userCreaterConsumer = user_creater.New(s.UserService(ctx), s.KafkaConsumer(ctx))
+	}
+
+	return s.userCreaterConsumer
 }

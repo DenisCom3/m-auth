@@ -11,3 +11,7 @@ type UserService interface {
 	Update(ctx context.Context, user model.UpdateUser) error
 	Delete(ctx context.Context, id int64) error
 }
+
+type ConsumerService interface {
+	RunConsumer(ctx context.Context) error
+}
