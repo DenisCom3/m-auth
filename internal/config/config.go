@@ -16,6 +16,7 @@ import (
 var cfg *config
 
 type yamlConfig struct {
+	Env      string            `yaml:"env" env-default:"dev"`
 	Postgres postgres.Postgres `yaml:"postgres" env-required:"true"`
 	Grpc     grpc.Grpc         `yaml:"grpc" env-required:"true"`
 	Redis    redis.Redis       `yaml:"redis" env-required:"true"`
@@ -23,6 +24,7 @@ type yamlConfig struct {
 }
 
 type config struct {
+	env           string
 	postgres      Postgres
 	grpc          Grpc
 	redis         Redis
@@ -76,6 +78,13 @@ func GetKafkaConsumer() KafkaConsumer {
 		panic("config not initialized")
 	}
 	return cfg.kafkaConsumer
+}
+
+func GetEnv() string {
+	if cfg == nil {
+		panic("config not initialized")
+	}
+	return cfg.env
 }
 func MustLoad() error {
 

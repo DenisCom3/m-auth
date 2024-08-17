@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/DenisCom3/m-auth/internal/closer"
 	"github.com/DenisCom3/m-auth/internal/config"
+	"github.com/DenisCom3/m-auth/internal/logger"
 	descAuth "github.com/DenisCom3/m-auth/pkg/auth_v1"
 	descUser "github.com/DenisCom3/m-auth/pkg/user_v1"
 	"google.golang.org/grpc"
@@ -85,6 +86,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initConfig,
 		a.initServiceProvider,
 		a.initGRPCServer,
+		a.initLogger,
 	}
 
 	for _, f := range inits {
@@ -100,6 +102,14 @@ func (a *App) initDeps(ctx context.Context) error {
 func (a *App) initConfig(_ context.Context) error {
 	err := config.MustLoad()
 
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *App) initLogger(_ context.Context) error {
+	err := logger.Init(config.GetEnv())
 	if err != nil {
 		return err
 	}
