@@ -8,7 +8,7 @@ import (
 
 func (i *Implementation) Get(ctx context.Context, r *desc.GetRequest) (*desc.GetResponse, error) {
 
-	user, err := i.userService.Get(ctx, r.GetId())
+	user, err := i.userService.GetById(ctx, r.GetId())
 
 	if err != nil {
 		return nil, err
