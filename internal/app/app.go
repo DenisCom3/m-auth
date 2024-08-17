@@ -4,7 +4,8 @@ import (
 	"context"
 	"github.com/DenisCom3/m-auth/internal/closer"
 	"github.com/DenisCom3/m-auth/internal/config"
-	desc "github.com/DenisCom3/m-auth/pkg/user_v1"
+	descAuth "github.com/DenisCom3/m-auth/pkg/auth_v1"
+	descUser "github.com/DenisCom3/m-auth/pkg/user_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -114,7 +115,8 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 
 	reflection.Register(a.grpcServer)
-	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
+	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImpl(ctx))
+	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImpl(ctx))
 
 	return nil
 }

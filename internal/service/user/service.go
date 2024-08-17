@@ -4,7 +4,6 @@ import (
 	"github.com/DenisCom3/m-auth/internal/client/cache"
 	"github.com/DenisCom3/m-auth/internal/repository"
 	"github.com/DenisCom3/m-auth/internal/service"
-	"github.com/DenisCom3/m-auth/internal/service/crypto"
 )
 
 type hashService interface {
@@ -19,10 +18,10 @@ type serv struct {
 	hashService hashService
 }
 
-func New(r repository.UserRepository, c cache.Cache) service.UserService {
+func New(r repository.UserRepository, c cache.Cache, h hashService) service.UserService {
 	return &serv{
 		cache:       c,
 		userRepo:    r,
-		hashService: crypto.Service{},
+		hashService: h,
 	}
 }

@@ -32,10 +32,37 @@ func New(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
-func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
+func (r *repo) GetById(ctx context.Context, id int64) (*model.User, error) {
 	builder := psql.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		Where(sq.Eq{idColumn: id}).
+		Limit(1)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     "userRepo.create",
+		QueryRaw: query,
+	}
+
+	var user modelRepo.User
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ToUserFromRepo(&user), nil
+}
+
+func (r *repo) GetByName(ctx context.Context, name string) (*model.User, error) {
+	builder := psql.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
+		From(tableName).
+		Where(sq.Eq{nameColumn: name}).
 		Limit(1)
 
 	query, args, err := builder.ToSql()

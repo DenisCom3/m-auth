@@ -2,22 +2,22 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
-
 	"github.com/DenisCom3/m-auth/internal/client/cache"
 	"github.com/DenisCom3/m-auth/internal/model"
+	"log"
 )
 
-func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {
+func (s *serv) GetByName(ctx context.Context, name string) (*model.User, error) {
 
 	var user *model.User
 
-	userCache, err := s.cache.Get(ctx, fmt.Sprintf("user_%d", id))
+	userCache, err := s.cache.Get(ctx, fmt.Sprintf("user_%s", name))
 
 	if err != nil {
 		switch {
-		case err == cache.ErrNotFound:
+		case errors.Is(err, cache.ErrNotFound):
 			log.Println("user not found in cache")
 		default:
 			return nil, err
@@ -30,7 +30,7 @@ func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {
 		log.Println("user not found in cache")
 	}
 
-	user, err = s.userRepo.Get(ctx, id)
+	user, err = s.userRepo.GetByName(ctx, name)
 	if err != nil {
 		return nil, err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/IBM/sarama"
 	"log"
 
+	authApi "github.com/DenisCom3/m-auth/internal/api/auth"
 	userApi "github.com/DenisCom3/m-auth/internal/api/user"
 	"github.com/DenisCom3/m-auth/internal/client/cache"
 	goredis "github.com/DenisCom3/m-auth/internal/client/cache/go-redis"
@@ -19,6 +20,7 @@ import (
 	"github.com/DenisCom3/m-auth/internal/repository"
 	userRepo "github.com/DenisCom3/m-auth/internal/repository/user"
 	"github.com/DenisCom3/m-auth/internal/service"
+	authServ "github.com/DenisCom3/m-auth/internal/service/auth"
 	userServ "github.com/DenisCom3/m-auth/internal/service/user"
 )
 
@@ -36,8 +38,10 @@ type serviceProvider struct {
 	userCreaterConsumer service.ConsumerService
 	userRepository      repository.UserRepository
 	userService         service.UserService
+	authService         service.AuthService
 
 	userImpl *userApi.Implementation
+	authImpl *authApi.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -81,7 +85,7 @@ func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumer {
 	return s.kafkaConsumerConfig
 }
 
-func (s *serviceProvider) CacheClient() cache.Cache {
+func (s *serviceProvider) CacheClient(_ context.Context) cache.Cache {
 	if s.cacheClient == nil {
 		s.cacheClient = goredis.NewCache(s.RedisConfig())
 	}
@@ -127,7 +131,7 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userService = userServ.New(s.UserRepository(ctx), s.CacheClient())
+		s.userService = userServ.New(s.UserRepository(ctx), s.CacheClient(ctx), s.AuthService(ctx))
 	}
 
 	return s.userService
@@ -139,6 +143,13 @@ func (s *serviceProvider) UserImpl(ctx context.Context) *userApi.Implementation 
 	}
 
 	return s.userImpl
+}
+func (s *serviceProvider) AuthImpl(ctx context.Context) *authApi.Implementation {
+	if s.authImpl == nil {
+		s.authImpl = authApi.NewImplementation(s.AuthService(ctx), s.UserService(ctx))
+	}
+
+	return s.authImpl
 }
 
 func (s *serviceProvider) KafkaConsumer(_ context.Context) kafka.Consumer {
@@ -167,4 +178,11 @@ func (s *serviceProvider) UserCreaterConsumer(ctx context.Context) service.Consu
 	}
 
 	return s.userCreaterConsumer
+}
+
+func (s *serviceProvider) AuthService(_ context.Context) service.AuthService {
+	if s.authService == nil {
+		s.authService = authServ.New()
+	}
+	return s.authService
 }

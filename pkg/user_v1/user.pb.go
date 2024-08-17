@@ -552,11 +552,11 @@ var file_user_proto_depIdxs = []int32{
 	8,  // 5: UpdateRequest.email:type_name -> google.protobuf.StringValue
 	0,  // 6: UpdateRequest.role:type_name -> Role
 	1,  // 7: UserV1.Create:input_type -> CreateRequest
-	3,  // 8: UserV1.Get:input_type -> GetRequest
+	3,  // 8: UserV1.GetById:input_type -> GetRequest
 	5,  // 9: UserV1.Update:input_type -> UpdateRequest
 	6,  // 10: UserV1.Delete:input_type -> DeleteRequest
 	2,  // 11: UserV1.Create:output_type -> CreateResponse
-	4,  // 12: UserV1.Get:output_type -> GetResponse
+	4,  // 12: UserV1.GetById:output_type -> GetResponse
 	9,  // 13: UserV1.Update:output_type -> google.protobuf.Empty
 	9,  // 14: UserV1.Delete:output_type -> google.protobuf.Empty
 	11, // [11:15] is the sub-list for method output_type

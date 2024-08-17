@@ -48,7 +48,7 @@ func (c *userV1Client) Create(ctx context.Context, in *CreateRequest, opts ...gr
 
 func (c *userV1Client) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
 	out := new(GetResponse)
-	err := c.cc.Invoke(ctx, "/UserV1/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/UserV1/GetById", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (UnimplementedUserV1Server) Create(context.Context, *CreateRequest) (*Creat
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedUserV1Server) Get(context.Context, *GetRequest) (*GetResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method GetById not implemented")
 }
 func (UnimplementedUserV1Server) Update(context.Context, *UpdateRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
@@ -141,7 +141,7 @@ func _UserV1_Get_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/UserV1/Get",
+		FullMethod: "/UserV1/GetById",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserV1Server).Get(ctx, req.(*GetRequest))
@@ -197,7 +197,7 @@ var UserV1_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserV1_Create_Handler,
 		},
 		{
-			MethodName: "Get",
+			MethodName: "GetById",
 			Handler:    _UserV1_Get_Handler,
 		},
 		{
